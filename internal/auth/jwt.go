@@ -31,8 +31,9 @@ func ParseJWT(secret, tokenStr string) (Claims, error) {
 	var c Claims
 	t, err := jwt.ParseWithClaims(tokenStr, &c, func(token *jwt.Token) (any, error) {
 		return []byte(secret), nil
-	})
-
+		},
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+	)
 	if err != nil || !t.Valid {
 		return Claims{}, errors.New("invalid token")
 	}
