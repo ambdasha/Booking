@@ -1,0 +1,107 @@
+
+//регистрация и логин на уровне HTTP слоя
+
+package handlers
+
+import (
+	"context"
+	"net/http"
+	"time"
+
+	"booking/internal/domain"
+	"booking/internal/dto"
+	"booking/internal/errs"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+)
+
+
+
+type AuthService interface {
+	Register(ctx context.Context, req dto.RegisterRequest) (domain.User, error)
+	Login(ctx context.Context, req dto.LoginRequest) (dto.TokenResponse, error)
+}
+
+type AuthHandler struct {
+	svc       AuthService
+	validator *validator.Validate
+}
+
+func NewAuthHandler(svc AuthService) *AuthHandler {
+	return &AuthHandler{
+		svc:       svc,
+		validator: validator.New(),
+	}
+}
+
+
+type userResponse struct {
+	ID        int64     `json:"id"`
+	Email     string    `json:"email"`
+	Name      string    `json:"name"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+
+
+//для единого JSON-формата ошибки
+func errorResp(code, msg string) gin.H {
+	return gin.H{"error": gin.H{"code": code, "message": msg}}
+}
+
+
+func (h *AuthHandler) Register(c *gin.Context) {
+	var req dto.RegisterRequest
+
+	if err:=c.ShouldBindBodyWithJSON(&req); err !=nil{
+		c.JSON(http.StatusBadRequest, errorResp("validation_error", "invalid json"))
+		return
+	}
+
+	u, err := h.svc.Register(c.Request.Context(), req)
+	if err != nil {
+		if err == errs.ErrConflict {
+			c.JSON(http.StatusConflict, errorResp("email_taken", "email already registered"))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorResp("internal_error", "something went wrong"))
+		return
+	}
+
+	c.JSON(http.StatusCreated, userResponse{
+		ID:        u.ID,
+		Email:     u.Email,
+		Name:      u.Name,
+		Role:      u.Role,
+		CreatedAt: u.CreatedAt,
+	})
+}
+
+func (h *AuthHandler) Login(c *gin.Context) {
+	var req dto.LoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResp("validation_error", "invalid json"))
+		return
+	}
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResp("validation_error", "invalid fields"))
+		return
+	}
+
+	token, err := h.svc.Login(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, errorResp("invalid_credentials", "wrong email or password"))
+		return
+	}
+
+	c.JSON(http.StatusOK, token)
+}
+
+
+
+
+
+
