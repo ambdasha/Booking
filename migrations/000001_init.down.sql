@@ -1,0 +1,5 @@
+
+DROP TABLE IF EXISTS room_blocks;
+DROP TABLE IF EXISTS reservations;
+DROP TABLE IF EXISTS rooms;
+DROP TABLE IF EXISTS users;
