@@ -25,6 +25,9 @@ func NewAuthService(users UserRepository, jwtSecret string) *AuthService {
 }
 
 
+//последущие методы Register и Login отвечают за бизнес-логику, то есть хеширование паролей и их проверка, выдача jwt и обработка ошибок
+
+
 func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (domain.User, error) {
 	hash, err := auth.HashPassword(req.Password)
 	if err != nil {
@@ -39,8 +42,6 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (do
 	}
 	return s.users.Create(ctx, u)
 }
-
-
 
 func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (dto.TokenResponse, error) {
 	u, err := s.users.GetByEmail(ctx, req.Email)
