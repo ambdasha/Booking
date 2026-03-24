@@ -7,7 +7,7 @@ import (
 )
 
 
-//защита эндпоинтов по роли
+//сравнивание с требуемой ролью
 func RequireRole(role string) gin.HandlerFunc {
 	return func(c *gin.Context){
 		_, currentRole := MustUser(c)
