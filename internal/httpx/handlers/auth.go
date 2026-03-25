@@ -46,17 +46,15 @@ type userResponse struct {
 
 
 
-//для единого JSON-формата ошибки
-func errorResp(code, msg string) gin.H {
-	return gin.H{"error": gin.H{"code": code, "message": msg}}
-}
-
-
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 
-	if err:=c.ShouldBindBodyWithJSON(&req); err !=nil{
+	if err:=c.ShouldBindJSON(&req); err !=nil{
 		c.JSON(http.StatusBadRequest, errorResp("validation_error", "invalid json"))
+		return
+	}
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResp("validation_error", "invalid fields"))
 		return
 	}
 
