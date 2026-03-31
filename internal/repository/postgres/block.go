@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"booking/internal/domain"
 	"booking/internal/errs"
@@ -40,21 +41,21 @@ func (r *BlockRepo) Create(ctx context.Context, b domain.RoomBlock) (domain.Room
 }
 
 //получить блокировки комнаты в диапазоне времени
-func (r *BlockRepo) ListByRoomAndRange(ctx context.Context, roomID int64, from, toTime pgxRangeTime) ([]domain.RoomBlock, error) {
+func (r *BlockRepo) ListByRoomAndRange(ctx context.Context, roomID int64, from, to time.Time) ([]domain.RoomBlock, error) {
 	const q = `
 	SELECT id, room_id, start_time, end_time, reason, created_by, created_at
 	FROM room_blocks
 	WHERE room_id = $1 AND start_time < $3 AND end_time > $2
 	ORDER BY start_time;
 	`
-	rows, err := r.db.Query(ctx, q, roomID, from.t, toTime.t)
+	rows, err := r.db.Query(ctx, q, roomID, from, to)
 	if err != nil {
 		return nil, fmt.Errorf("list blocks: %w", err)
 	}
 	defer rows.Close()
 
 	var out []domain.RoomBlock
-
+	
 	for rows.Next() {
 		var b domain.RoomBlock
 		if err := rows.Scan(&b.ID, &b.RoomID, &b.StartTime, &b.EndTime, &b.Reason, &b.CreatedBy, &b.CreatedAt); err != nil {
@@ -76,8 +77,3 @@ func (r *BlockRepo) Delete(ctx context.Context, blockID int64) error {
 	}
 	return nil
 }
-
-//хелпер чтобы не путаться с именами переменных time.Time
-type pgxRangeTime struct{ t any }
-
-func rt(v any) pgxRangeTime { return pgxRangeTime{t: v} }

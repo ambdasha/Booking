@@ -113,3 +113,34 @@ func (r *ReservationRepo) ListByUser(ctx context.Context, userID int64, status s
 	}
 	return out, nil
 }
+
+
+func (r *ReservationRepo) ListByRoomAndRange(ctx context.Context, roomID int64, from, to time.Time) ([]domain.Reservation, error) {
+	const q = `
+	SELECT id, user_id, room_id, start_time, end_time, status, cancelled_at, cancellation_reason, created_at
+	FROM reservations
+	WHERE room_id = $1
+	AND status IN ('pending', 'confirmed')
+	AND start_time < $3
+	AND end_time > $2
+	ORDER BY start_time;
+	`
+	rows, err := r.db.Query(ctx, q, roomID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("list reservations range: %w", err)
+	}
+	defer rows.Close()
+
+	var out []domain.Reservation
+	for rows.Next() {
+		var res domain.Reservation
+		if err := rows.Scan(
+			&res.ID, &res.UserID, &res.RoomID, &res.StartTime, &res.EndTime, &res.Status,
+			&res.CancelledAt, &res.CancellationReason, &res.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan reservation: %w", err)
+		}
+		out = append(out, res)
+	}
+	return out, nil
+}
