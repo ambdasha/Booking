@@ -30,6 +30,19 @@ func NewReservationsHandler(svc ReservationService) *ReservationsHandler {
 	return &ReservationsHandler{svc: svc, validator: validator.New()}
 }
 
+// Create godoc
+// @Summary Создать бронирование
+// @Description Создает новое бронирование комнаты
+// @Tags reservations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param input body dto.CreateReservationRequest true "Данные бронирования"
+// @Success 201 {object} dto.ReservationResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 409 {object} map[string]interface{}
+// @Router /reservations [post]
 func (h *ReservationsHandler) Create(c *gin.Context) {
 	uid, _ := middleware.MustUser(c)
 
@@ -76,6 +89,15 @@ func (h *ReservationsHandler) Create(c *gin.Context) {
 	})
 }
 
+// MyList godoc
+// @Summary Мои бронирования
+// @Description Возвращает список бронирований текущего пользователя
+// @Tags reservations
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.ReservationResponse
+// @Failure 401 {object} map[string]interface{}
+// @Router /reservations/my [get]
 func (h *ReservationsHandler) MyList(c *gin.Context) {
 	uid, _ := middleware.MustUser(c)
 	status := c.Query("status") // можно '', confirmed, cancelled...
@@ -102,6 +124,19 @@ func (h *ReservationsHandler) MyList(c *gin.Context) {
 	c.JSON(http.StatusOK, out)
 }
 
+// Get godoc
+// @Summary Получить бронирование
+// @Description Возвращает бронирование по id
+// @Tags reservations
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID бронирования"
+// @Success 200 {object} dto.ReservationResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /reservations/{id} [get]
 func (h *ReservationsHandler) Get(c *gin.Context) {
 	uid, role := middleware.MustUser(c)
 
@@ -137,6 +172,20 @@ func (h *ReservationsHandler) Get(c *gin.Context) {
 	})
 }
 
+// Cancel godoc
+// @Summary Отменить бронирование
+// @Description Отменяет бронирование по id
+// @Tags reservations
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID бронирования"
+// @Success 200 {object} dto.ReservationResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 409 {object} map[string]interface{}
+// @Router /reservations/{id}/cancel [post]
 func (h *ReservationsHandler) Cancel(c *gin.Context) {
 	uid, role := middleware.MustUser(c)
 

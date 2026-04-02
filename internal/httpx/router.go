@@ -11,6 +11,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "booking/docs"
 )
 
 //сбор всего HTTP слоя
@@ -46,6 +51,7 @@ func NewRouter(cfg config.Config, db *pgxpool.Pool, logger *slog.Logger) *gin.En
 	availabilityH := handlers.NewAvailabilityHandler(availabilitySvc)
 
 	// PUBLIC 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("/health", healthH.Health)
 
 	r.POST("/auth/register", authH.Register)

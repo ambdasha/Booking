@@ -35,7 +35,14 @@ func NewRoomsHandler(svc RoomService) *RoomsHandler {
 	}
 }
 
-
+// List godoc
+// @Summary Список комнат
+// @Description Возвращает список активных комнат
+// @Tags rooms
+// @Produce json
+// @Success 200 {array} dto.RoomResponse
+// @Failure 500 {object} map[string]interface{}
+// @Router /rooms [get]
 func (h *RoomsHandler) List(c *gin.Context) {
 	rooms, err := h.svc.List(c.Request.Context())
 	if err != nil {
@@ -51,6 +58,17 @@ func (h *RoomsHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, out)
 }
 
+
+// Get godoc
+// @Summary Получить комнату
+// @Description Возвращает комнату по id
+// @Tags rooms
+// @Produce json
+// @Param id path int true "ID комнаты"
+// @Success 200 {object} dto.RoomResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /rooms/{id} [get]
 func (h *RoomsHandler) Get(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || id <= 0 {
@@ -71,6 +89,19 @@ func (h *RoomsHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, roomToResponse(room))
 }
 
+// Create godoc
+// @Summary Создать комнату
+// @Description Создает новую комнату. Доступно только администратору
+// @Tags admin-rooms
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param input body dto.CreateRoomRequest true "Данные комнаты"
+// @Success 201 {object} dto.RoomResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /admin/rooms [post]
 func (h *RoomsHandler) Create(c *gin.Context) {
 	var req dto.CreateRoomRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -91,6 +122,22 @@ func (h *RoomsHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, roomToResponse(room))
 }
 
+
+// Update godoc
+// @Summary Обновить комнату
+// @Description Обновляет комнату по id. Доступно только администратору
+// @Tags admin-rooms
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID комнаты"
+// @Param input body dto.UpdateRoomRequest true "Новые данные комнаты"
+// @Success 200 {object} dto.RoomResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /admin/rooms/{id} [put]
 func (h *RoomsHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || id <= 0 {
@@ -121,6 +168,19 @@ func (h *RoomsHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, roomToResponse(room))
 }
 
+// Deactivate godoc
+// @Summary Деактивировать комнату
+// @Description Помечает комнату как неактивную. Доступно только администратору
+// @Tags admin-rooms
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID комнаты"
+// @Success 204
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /admin/rooms/{id} [delete]
 func (h *RoomsHandler) Deactivate(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || id <= 0 {

@@ -29,7 +29,22 @@ func NewBlocksHandler(svc BlockService) *BlocksHandler {
 	return &BlocksHandler{svc: svc, validator: validator.New()}
 }
 
-//создание брони
+// Create godoc
+// @Summary Создать блокировку комнаты
+// @Description Создает блокировку комнаты на указанный интервал. Доступно только администратору
+// @Tags admin-blocks
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID комнаты"
+// @Param input body dto.CreateBlockRequest true "Данные блокировки"
+// @Success 201 {object} dto.BlockResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 409 {object} map[string]interface{}
+// @Router /admin/rooms/{id}/blocks [post]
 func (h *BlocksHandler) Create(c *gin.Context) {
 	adminID, _ := middleware.MustUser(c)
 
@@ -79,6 +94,20 @@ func (h *BlocksHandler) Create(c *gin.Context) {
 	})
 }
 
+
+// Delete godoc
+// @Summary Удалить блокировку
+// @Description Удаляет блокировку комнаты. Доступно только администратору
+// @Tags admin-blocks
+// @Produce json
+// @Security BearerAuth
+// @Param block_id path int true "ID блокировки"
+// @Success 204
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /admin/blocks/{block_id} [delete]
 func (h *BlocksHandler) Delete(c *gin.Context) {
 
 	blockID, err := strconv.ParseInt(c.Param("block_id"), 10, 64)

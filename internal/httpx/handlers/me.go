@@ -15,6 +15,15 @@ type MeHandler struct{}
 
 func NewMeHandler() *MeHandler { return &MeHandler{} }
 
+// Me godoc
+// @Summary Текущий пользователь
+// @Description Возвращает данные текущего авторизованного пользователя
+// @Tags users
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /me [get]
 func (h *MeHandler) Me(c *gin.Context) {
 	uid, role := middleware.MustUser(c)
 	c.JSON(http.StatusOK, gin.H{

@@ -1,0 +1,15 @@
+basePath: /
+info:
+  contact: {}
+  description: API для бронирования переговорных комнат
+  title: Booking API
+  version: "1.0"
+paths: {}
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

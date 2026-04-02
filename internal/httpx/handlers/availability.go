@@ -25,6 +25,18 @@ func NewAvailabilityHandler(svc AvailabilityService) *AvailabilityHandler {
 	return &AvailabilityHandler{svc: svc}
 }
 
+// Get godoc
+// @Summary Проверить доступность комнаты
+// @Description Возвращает информацию о занятых интервалах и доступности комнаты в указанном диапазоне
+// @Tags availability
+// @Produce json
+// @Param id path int true "ID комнаты"
+// @Param from query string true "Начало периода в RFC3339"
+// @Param to query string true "Конец периода в RFC3339"
+// @Success 200 {object} dto.AvailabilityResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /rooms/{id}/availability [get]
 func (h *AvailabilityHandler) Get(c *gin.Context) {
 	roomID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || roomID <= 0 {

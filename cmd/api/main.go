@@ -1,3 +1,12 @@
+// @title Booking API
+// @version 1.0
+// @description API для бронирования переговорных комнат
+// @BasePath /
+// @schemes http
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 package main
 
 import (
