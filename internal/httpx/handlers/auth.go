@@ -1,4 +1,3 @@
-
 //регистрация и логин на уровне HTTP слоя
 
 package handlers
@@ -6,7 +5,6 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"booking/internal/domain"
 	"booking/internal/dto"
@@ -15,8 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
-
-
 
 type AuthService interface {
 	Register(ctx context.Context, req dto.RegisterRequest) (domain.User, error)
@@ -35,16 +31,6 @@ func NewAuthHandler(svc AuthService) *AuthHandler {
 	}
 }
 
-
-type userResponse struct {
-	ID        int64     `json:"id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-
 // Register godoc
 // @Summary Регистрация пользователя
 // @Description Создает нового пользователя
@@ -52,14 +38,14 @@ type userResponse struct {
 // @Accept json
 // @Produce json
 // @Param input body dto.RegisterRequest true "Данные для регистрации"
-// @Success 201 {object} dto.AuthResponse
+// @Success 201 {object} dto.RegisterResponse
 // @Failure 400 {object} map[string]interface{}
 // @Failure 409 {object} map[string]interface{}
 // @Router /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 
-	if err:=c.ShouldBindJSON(&req); err !=nil{
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResp("validation_error", "invalid json"))
 		return
 	}
@@ -78,7 +64,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, userResponse{
+	c.JSON(http.StatusCreated, dto.RegisterResponse{
 		ID:        u.ID,
 		Email:     u.Email,
 		Name:      u.Name,
@@ -94,7 +80,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param input body dto.LoginRequest true "Данные для входа"
-// @Success 200 {object} dto.AuthResponse
+// @Success 200 {object} dto.TokenResponse
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Router /auth/login [post]
@@ -118,9 +104,3 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, token)
 }
-
-
-
-
-
-

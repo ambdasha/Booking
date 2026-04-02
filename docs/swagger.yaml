@@ -1,10 +1,730 @@
 basePath: /
+definitions:
+  dto.AvailabilityResponse:
+    properties:
+      blocks:
+        description: занятые админскими блокировками
+        items:
+          $ref: '#/definitions/dto.Interval'
+        type: array
+      from:
+        type: string
+      reservations:
+        description: занятые активными бронями
+        items:
+          $ref: '#/definitions/dto.Interval'
+        type: array
+      room_id:
+        type: integer
+      to:
+        type: string
+    type: object
+  dto.BlockResponse:
+    properties:
+      created_at:
+        type: string
+      end_time:
+        type: string
+      id:
+        type: integer
+      reason:
+        type: string
+      room_id:
+        type: integer
+      start_time:
+        type: string
+    type: object
+  dto.CreateBlockRequest:
+    properties:
+      end_time:
+        type: string
+      reason:
+        maxLength: 256
+        type: string
+      start_time:
+        type: string
+    type: object
+  dto.CreateReservationRequest:
+    properties:
+      end_time:
+        type: string
+      room_id:
+        minimum: 1
+        type: integer
+      start_time:
+        type: string
+    required:
+    - room_id
+    type: object
+  dto.CreateRoomRequest:
+    properties:
+      capacity:
+        maximum: 1000
+        minimum: 1
+        type: integer
+      description:
+        type: string
+      location:
+        type: string
+      name:
+        maxLength: 120
+        minLength: 2
+        type: string
+    required:
+    - capacity
+    - name
+    type: object
+  dto.Interval:
+    properties:
+      end_time:
+        type: string
+      start_time:
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 64
+        minLength: 2
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.RegisterResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  dto.ReservationResponse:
+    properties:
+      created_at:
+        type: string
+      end_time:
+        type: string
+      id:
+        type: integer
+      room_id:
+        type: integer
+      start_time:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.RoomResponse:
+    properties:
+      capacity:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      location:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      token_type:
+        type: string
+    type: object
+  dto.UpdateRoomRequest:
+    properties:
+      capacity:
+        maximum: 1000
+        minimum: 1
+        type: integer
+      description:
+        type: string
+      location:
+        type: string
+      name:
+        maxLength: 120
+        minLength: 2
+        type: string
+    required:
+    - capacity
+    - name
+    type: object
 info:
   contact: {}
   description: API для бронирования переговорных комнат
   title: Booking API
   version: "1.0"
-paths: {}
+paths:
+  /admin/blocks/{block_id}:
+    delete:
+      description: Удаляет блокировку комнаты. Доступно только администратору
+      parameters:
+      - description: ID блокировки
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить блокировку
+      tags:
+      - admin-blocks
+  /admin/rooms:
+    post:
+      consumes:
+      - application/json
+      description: Создает новую комнату. Доступно только администратору
+      parameters:
+      - description: Данные комнаты
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.RoomResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Создать комнату
+      tags:
+      - admin-rooms
+  /admin/rooms/{id}:
+    delete:
+      description: Помечает комнату как неактивную. Доступно только администратору
+      parameters:
+      - description: ID комнаты
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Деактивировать комнату
+      tags:
+      - admin-rooms
+    put:
+      consumes:
+      - application/json
+      description: Обновляет комнату по id. Доступно только администратору
+      parameters:
+      - description: ID комнаты
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новые данные комнаты
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RoomResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить комнату
+      tags:
+      - admin-rooms
+  /admin/rooms/{id}/blocks:
+    post:
+      consumes:
+      - application/json
+      description: Создает блокировку комнаты на указанный интервал. Доступно только
+        администратору
+      parameters:
+      - description: ID комнаты
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные блокировки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBlockRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.BlockResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Создать блокировку комнаты
+      tags:
+      - admin-blocks
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает JWT токен
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Вход в систему
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /me:
+    get:
+      description: Возвращает данные текущего авторизованного пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Текущий пользователь
+      tags:
+      - users
+  /reservations:
+    post:
+      consumes:
+      - application/json
+      description: Создает новое бронирование комнаты
+      parameters:
+      - description: Данные бронирования
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateReservationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ReservationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Создать бронирование
+      tags:
+      - reservations
+  /reservations/{id}:
+    get:
+      description: Возвращает бронирование по id
+      parameters:
+      - description: ID бронирования
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ReservationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Получить бронирование
+      tags:
+      - reservations
+  /reservations/{id}/cancel:
+    post:
+      description: Отменяет бронирование по id
+      parameters:
+      - description: ID бронирования
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ReservationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Отменить бронирование
+      tags:
+      - reservations
+  /reservations/my:
+    get:
+      description: Возвращает список бронирований текущего пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ReservationResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Мои бронирования
+      tags:
+      - reservations
+  /rooms:
+    get:
+      description: Возвращает список активных комнат
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.RoomResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Список комнат
+      tags:
+      - rooms
+  /rooms/{id}:
+    get:
+      description: Возвращает комнату по id
+      parameters:
+      - description: ID комнаты
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RoomResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получить комнату
+      tags:
+      - rooms
+  /rooms/{id}/availability:
+    get:
+      description: Возвращает информацию о занятых интервалах и доступности комнаты
+        в указанном диапазоне
+      parameters:
+      - description: ID комнаты
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Начало периода в RFC3339
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Конец периода в RFC3339
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AvailabilityResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Проверить доступность комнаты
+      tags:
+      - availability
 schemes:
 - http
 securityDefinitions:
