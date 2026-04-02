@@ -113,3 +113,16 @@ booking-service/
 ├── go.mod
 ├── go.sum
 └── README.md
+
+
+
+
+router = сборка и маршруты
+middleware = общие проверки/логирование
+handlers = HTTP слой
+services = правила
+repos = SQL
+
+
+
+

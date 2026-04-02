@@ -15,13 +15,12 @@ services:
 
   api:
     build:
-      context: ../..
-      dockerfile: deployments/docker/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     environment:
       HTTP_ADDR: ${HTTP_ADDR}
       LOG_LEVEL: ${LOG_LEVEL}
       JWT_SECRET: ${JWT_SECRET}
-      # внутри docker-сети хост БД = имя сервиса "postgres"
       DB_DSN: ${DB_DSN_DOCKER}
     ports:
       - "${API_PORT}:8080"

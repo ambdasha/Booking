@@ -41,12 +41,11 @@ func (s *ReservationService) Create(ctx context.Context, userID int64, req dto.C
 		return domain.Reservation{}, errs.ErrValidation
 	}
 
-	// пример ограничений (можешь менять)
 	if end.Sub(start) < 15*time.Minute || end.Sub(start) > 8*time.Hour {
 		return domain.Reservation{}, errs.ErrValidation
 	}
 
-	// нельзя бронировать в прошлом (маленькая “погрешность”)
+	// нельзя бронировать в прошлом 
 	if start.Before(time.Now().UTC().Add(-1 * time.Minute)) {
 		return domain.Reservation{}, errs.ErrValidation
 	}

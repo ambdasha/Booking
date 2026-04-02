@@ -1,4 +1,3 @@
-
 FROM golang:1.25.5 AS build
 
 WORKDIR /app
@@ -8,7 +7,11 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/api ./cmd/api
 
 FROM gcr.io/distroless/base-debian12
-COPY --from=build /bin/api /api
+
+WORKDIR /app
+COPY --from=build /bin/api /app/api
+COPY --from=build /app/migrations /app/migrations
+
 EXPOSE 8080
 USER nonroot:nonroot
-ENTRYPOINT ["/api"]
+ENTRYPOINT ["/app/api"]

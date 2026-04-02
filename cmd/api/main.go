@@ -23,6 +23,12 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
+	if err := postgres.RunMigrations(cfg.DB.DSN); err != nil {
+		logger.Error("migrations failed", "err", err)
+		os.Exit(1)
+	}
+	logger.Info("migrations applied")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -44,7 +50,6 @@ func main() {
 		IdleTimeout:       60 * time.Second,
 	}
 
-	// graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
